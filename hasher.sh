@@ -83,12 +83,13 @@ else
     echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: File $FILE not found or not specified!"
     booleanUserRequest "Do you want to create it?"
     if [[ $? -eq 1 ]] ; then # true
-      touch $FILE $FILE.enc
+      touch $FILE $FILE.enc $FILE.enc.backup
     fi
 
   # file exists
   else
     echo "Loading file: $FILE.enc"
+    cp $FILE.enc $FILE.enc.backup
     openssl enc -aes-256-cbc -pbkdf2 -d -in $FILE.enc -out $FILE
   fi
 
