@@ -74,7 +74,7 @@ if $HELP ; then
 else
 
   # file doesnt exist
-  if [ ! -e "$FILE.enc" ] ; then
+  if [ ! -e "$FILE.enc" ] && [ ! -e "$FILE" ]; then
     echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: File $FILE not found or not specified!"
     booleanUserRequest "Do you want to create it?"
     if [[ $? -eq 1 ]] ; then # true
