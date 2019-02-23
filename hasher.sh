@@ -73,8 +73,13 @@ if $HELP ; then
 
 else
 
+  # refractor file string if needed
+  if [[ $FILE =~ ".enc" ]] ; then
+    FILE=${FILE%.enc}
+  fi
+
   # file doesnt exist
-  if [ ! -e "$FILE.enc" ] && [ ! -e "$FILE" ]; then
+  if [ ! -e "$FILE.enc" ] ; then
     echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: File $FILE not found or not specified!"
     booleanUserRequest "Do you want to create it?"
     if [[ $? -eq 1 ]] ; then # true
