@@ -116,7 +116,7 @@ function readKeyRelatedValues()
 function addKeyToClipboard()
 {
   readKeyRelatedValues
-  echo ${VALARR[3]} | xclip -selection c
+  echo ${VALARR[3]} | tr -d '\n' | xclip -selection c
 }
 
 
