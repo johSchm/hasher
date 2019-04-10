@@ -3,8 +3,8 @@
 # ==========================================================================
 # @name     HASH
 # @author   JS
-# @version  1.1
-# @date     February 2019
+# @version  1.2
+# @date     April 2019
 # ==========================================================================
 
 # --------------------------------------------------------------------------
@@ -22,7 +22,7 @@ TEXT_ERROR='\e[31m'
 TEXT_HEADER='\e[1m'
 NUM_OF_VALUE_DIGITS=22
 CHAR_LIST='A-Za-z0-9!#$%&+?@'
-TEMP=`getopt -o f:k:a:d:lh --long file:,key:,add:,delete:,list,help \
+TEMP=`getopt -o f:k:a:d:lch --long file:,key:,add:,delete:,list,clipboard,help \
              -n 'javawrap' -- "$@"`
 
 FILE="`dirname \"$0\"`/hash.txt"
@@ -30,6 +30,7 @@ KEY=""
 ADD=""
 DELETE=""
 LIST=false
+CLIPBOARD=false
 HELP=false
 
 
@@ -56,6 +57,7 @@ function displayHelp()
   echo -e "\t-a, --add\t\tAdd a key with a connected value."
   echo -e "\t-d, --delete\t\tDelete a certain entry."
   echo -e "\t-l, --list\t\tList all stored keys."
+  echo -e "\t-c, --clipboard\t\tAdd the key to the clipboard and hide the visual output."
   echo -e "\t-h, --help\t\tDisplay help information."
   echo -e "\n"
 }
@@ -86,10 +88,10 @@ function loadFile()
 }
 
 
-# prints key related information
+# prints key related information visually as shell output
 function printKeyInfo()
 {
-  VALUES=$(awk -v key="[$KEY]" '$0==key { for (i = 1; i <= 4; i++) { getline; print $0 } }' $FILE)
+  VALUES=readKeyRelatedValues
   if [ -z "$VALUES" ] ; then
     echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
   else
@@ -98,6 +100,36 @@ function printKeyInfo()
     echo -e "Email:\t${VALARR[1]}"
     echo -e "Descr:\t${VALARR[2]}"
     echo -e "Passw:\t${VALARR[3]}"
+  fi
+}
+
+
+# returns the values (array) of the certain key
+function readKeyRelatedValues()
+{
+  return $(awk -v key="[$KEY]" '$0==key { for (i = 1; i <= 4; i++) { getline; print $0 } }' $FILE)
+}
+
+
+# add key to the clipboard
+function addKeyToClipboard()
+{
+  VALUES=readKeyRelatedValues
+  if [ -z "$VALUES" ] ; then
+    echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
+  else
+    echo VALUES[3] | xclip -selection c
+  fi
+}
+
+
+# redirect the output to an appropriated output method
+function outputKeyInfo()
+{
+  if $CLIPBOARD ; then
+    addKeyToClipboard
+  else
+    printKeyInfo
   fi
 }
 
@@ -150,12 +182,13 @@ function listEntries()
 
 while true; do
   case "$1" in
-    -f | --file )   FILE="$2";    shift 2 ;;
-    -k | --key )    KEY="$2";     shift 2 ;;
-    -a | --add )    ADD="$2";     shift 2 ;;
-    -d | --delete ) DELETE="$2";  shift 2 ;;
-    -l | --list )   LIST=true;    shift ;;
-    -h | --help )   HELP=true;    shift ;;
+    -f | --file )       FILE="$2";      shift 2 ;;
+    -k | --key )        KEY="$2";       shift 2 ;;
+    -a | --add )        ADD="$2";       shift 2 ;;
+    -d | --delete )     DELETE="$2";    shift 2 ;;
+    -l | --list )       LIST=true;      shift ;;
+    -c | --clipboard )  CLIPBOARD=true; shift ;;
+    -h | --help )       HELP=true;      shift ;;
     -- ) shift; break ;;
     * ) break ;;
   esac
@@ -166,7 +199,7 @@ if $HELP ; then
 else
   loadFile
   if [ ! -z "$KEY" ] ; then
-    printKeyInfo
+    outputKeyInfo
   elif [ ! -z "$ADD" ] ; then
     addEntry
   elif [ ! -z "$DELETE" ] ; then
