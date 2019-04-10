@@ -9,4 +9,5 @@ This simple shell script tool provides the possibility to store, query and manip
 -a, --add\t\tAdd a key with a connected value.
 -d, --delete\t\tDelete a certain entry.
 -l, --list\t\tList all stored keys.
+-c, --clipboard\tHide shell output and copy pw to clipboard.
 -h, --help\t\tDisplay help information.
