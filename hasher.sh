@@ -91,35 +91,32 @@ function loadFile()
 # prints key related information visually as shell output
 function printKeyInfo()
 {
-  VALUES=readKeyRelatedValues
-  if [ -z "$VALUES" ] ; then
-    echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
-  else
-    VALARR=(${VALUES})
-    echo -e "Uname:\t${VALARR[0]}"
-    echo -e "Email:\t${VALARR[1]}"
-    echo -e "Descr:\t${VALARR[2]}"
-    echo -e "Passw:\t${VALARR[3]}"
-  fi
+  readKeyRelatedValues
+  echo -e "Uname:\t${VALARR[0]}"
+  echo -e "Email:\t${VALARR[1]}"
+  echo -e "Descr:\t${VALARR[2]}"
+  echo -e "Passw:\t${VALARR[3]}"
 }
 
 
 # returns the values (array) of the certain key
+VALARR=[]
 function readKeyRelatedValues()
 {
-  return $(awk -v key="[$KEY]" '$0==key { for (i = 1; i <= 4; i++) { getline; print $0 } }' $FILE)
+  VALUES=$(awk -v key="[$KEY]" '$0==key { for (i = 1; i <= 4; i++) { getline; print $0 } }' $FILE)
+  if [ -z "$VALUES" ] ; then
+    echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
+  else
+    VALARR=(${VALUES})
+  fi
 }
 
 
 # add key to the clipboard
 function addKeyToClipboard()
 {
-  VALUES=readKeyRelatedValues
-  if [ -z "$VALUES" ] ; then
-    echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
-  else
-    echo VALUES[3] | xclip -selection c
-  fi
+  readKeyRelatedValues
+  echo ${VALARR[3]} | xclip -selection c
 }
 
 
