@@ -5,10 +5,11 @@ This simple shell script tool provides the possibility to store, query and manip
 ## Usage
 | Short command | Long command  | Description                                           |
 |:--------------|:------------- |:----------------------------------------------------- |
-| -f            | --file         | Specify a certain file to be used.                     |
+| -f            | --file         | Specify a certain file to be used.                   |
 | -k            | --key         | Searches for a key value and return the stored value. |
 | -a            | --add         | Add a key with a connected value.                     |
 | -d            | --delete      | Delete a certain entry.                               |
 | -l            | --list        | List all stored keys.                                 |
 | -c            | --clipboard   | Hide shell output and copy pw to clipboard.           |
+| -e            | --edit        | Enter edit mode for a certain key.                    |
 | -h            | --help        | Display help information.                             |

@@ -4,7 +4,7 @@
 # @name     HASH
 # @author   JS
 # @version  1.2
-# @date     April 2019
+# @date     July 2019
 # ==========================================================================
 
 # --------------------------------------------------------------------------
@@ -22,13 +22,14 @@ TEXT_ERROR='\e[31m'
 TEXT_HEADER='\e[1m'
 NUM_OF_VALUE_DIGITS=22
 CHAR_LIST='A-Za-z0-9!#$%&+?@'
-TEMP=`getopt -o f:k:a:d:lch --long file:,key:,add:,delete:,list,clipboard,help \
+TEMP=`getopt -o f:k:a:d:e:lch --long file:,key:,add:,delete:,edit:,list,clipboard,help \
              -n 'javawrap' -- "$@"`
 
 FILE="`dirname \"$0\"`/hash.txt"
 KEY=""
 ADD=""
 DELETE=""
+EDIT=""
 LIST=false
 CLIPBOARD=false
 HELP=false
@@ -58,6 +59,7 @@ function displayHelp()
   echo -e "\t-d, --delete\t\tDelete a certain entry."
   echo -e "\t-l, --list\t\tList all stored keys."
   echo -e "\t-c, --clipboard\t\tAdd the key to the clipboard and hide the visual output."
+  echo -e "\t-e, --edit\t\tEnter edit mode for a certain key."
   echo -e "\t-h, --help\t\tDisplay help information."
   echo -e "\n"
 }
@@ -105,7 +107,7 @@ function readKeyRelatedValues()
 {
   VALUES=$(awk -v key="[$KEY]" '$0==key { for (i = 1; i <= 4; i++) { getline; print $0 } }' $FILE)
   if [ -z "$VALUES" ] ; then
-    echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
+    echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key ${KEY} not found!"
   else
     VALARR=(${VALUES})
   fi
@@ -131,6 +133,46 @@ function outputKeyInfo()
 }
 
 
+# edit key related informations
+function editEntry()
+{
+  KEY=${EDIT}
+  readKeyRelatedValues
+  read -p "Uname: " -e -i ${VALARR[0]} UNAME
+  read -p "Email: " -e -i ${VALARR[1]} EMAIL
+  read -p "Descr: " -e -i ${VALARR[2]} DESCR
+
+  PASSW=""
+  booleanUserRequest "Use password auto gen?"
+  if [[ $? -eq 1 ]] ; then # true
+    PASSW=$(</dev/urandom tr -dc $CHAR_LIST | head -c $NUM_OF_VALUE_DIGITS)
+  else
+    read -p "Passw: " -e -i ${VALARR[3]} PASSW
+  fi
+
+  LINENUM=1
+  while read LINE ; do
+    if [ $LINENUM -eq $(cat $FILE | wc -l) ] ; then
+      echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key ${EDIT} not found!"
+      break
+    elif [[ $LINE == "[$EDIT]" ]] ; then
+      for (( i=$LINENUM; i <= ($LINENUM+4); i++ )) ; do
+        sed -i -e "${LINENUM}d" $FILE
+      done
+    fi
+    ((LINENUM++))
+  done < $FILE
+
+  echo "[$EDIT]" >> $FILE
+  if [[ -z "$UNAME" ]] ; then UNAME="none" ; fi
+  if [[ -z "$EMAIL" ]] ; then EMAIL="none" ; fi
+  if [[ -z "$DESCR" ]] ; then DESCR="none" ; fi
+  if [[ -z "$PASSW" ]] ; then PASSW="none" ; fi
+  echo -e "$UNAME\n$EMAIL\n$DESCR\n$PASSW" >> $FILE
+  openssl enc -aes-256-cbc -pbkdf2 -in $FILE -out $FILE.enc
+}
+
+
 # add new entry
 function addEntry()
 {
@@ -153,7 +195,7 @@ function deleteEntry()
   LINENUM=1
   while read LINE ; do
     if [ $LINENUM -eq $(cat $FILE | wc -l) ] ; then
-      echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key not found!"
+      echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Key ${DELETE} not found!"
       break
     elif [[ $LINE == "[$DELETE]" ]] ; then
       for (( i=$LINENUM; i <= ($LINENUM+4); i++ )) ; do
@@ -183,6 +225,7 @@ while true; do
     -k | --key )        KEY="$2";       shift 2 ;;
     -a | --add )        ADD="$2";       shift 2 ;;
     -d | --delete )     DELETE="$2";    shift 2 ;;
+    -e | --edit )       EDIT="$2";      shift 2 ;;
     -l | --list )       LIST=true;      shift ;;
     -c | --clipboard )  CLIPBOARD=true; shift ;;
     -h | --help )       HELP=true;      shift ;;
@@ -201,6 +244,8 @@ else
     addEntry
   elif [ ! -z "$DELETE" ] ; then
     deleteEntry
+  elif [ ! -z "$EDIT" ] ; then
+    editEntry
   elif $LIST ; then
     listEntries
   else
