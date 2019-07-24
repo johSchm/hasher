@@ -219,6 +219,32 @@ function listEntries()
 }
 
 
+# get password
+PASS=""
+function getPassword()
+{
+  set +o history
+  unset PASS || exit 1
+  read -sp 'Enter password: ' PASS; echo
+}
+
+
+# Decrypt the file
+function decrypt()
+{
+  exec 3<<<"$PASS"
+  openssl enc -d -aes-256-cbc -pass fd:3 -pbkdf2 -in $FILE.enc -out $FILE
+}
+
+
+# Encrypt the file
+function encrypt()
+{
+  exec 4<<<"$PASS"
+  openssl enc -e -aes-256-cbc -pass fd:4 -pbkdf2 -in $FILE -out $FILE.enc
+}
+
+
 while true; do
   case "$1" in
     -f | --file )       FILE="$2";      shift 2 ;;
