@@ -52,7 +52,7 @@ function booleanUserRequest()
 # display help text
 function displayHelp()
 {
-  echo -e "\n\t${TEXT_HEADER}HASH by JS${TEXT_RESET}\n"
+  echo -e "\n\t${TEXT_HEADER}HASHER by JS${TEXT_RESET}\n"
   echo -e "\t-f, --file\t\tSpecify a certain file to be used."
   echo -e "\t-k, --key\t\tSearches for a key value and return the stored value."
   echo -e "\t-a, --add\t\tAdd a key with a connected value."
@@ -85,7 +85,8 @@ function loadFile()
   else
     echo "Loading file: $FILE.enc"
     cp $FILE.enc $FILE.enc.backup
-    openssl enc -aes-256-cbc -pbkdf2 -d -in $FILE.enc -out $FILE
+    getPassword
+    decrypt
   fi
 }
 
@@ -169,7 +170,7 @@ function editEntry()
   if [[ -z "$DESCR" ]] ; then DESCR="none" ; fi
   if [[ -z "$PASSW" ]] ; then PASSW="none" ; fi
   echo -e "$UNAME\n$EMAIL\n$DESCR\n$PASSW" >> $FILE
-  openssl enc -aes-256-cbc -pbkdf2 -in $FILE -out $FILE.enc
+  encrypt
 }
 
 
@@ -185,7 +186,7 @@ function addEntry()
   if [[ -z "$DESCR" ]] ; then DESCR="none" ; fi
   echo -e "$UNAME\n$EMAIL\n$DESCR" >> $FILE
   echo $(</dev/urandom tr -dc $CHAR_LIST | head -c $NUM_OF_VALUE_DIGITS) >> $FILE
-  openssl enc -aes-256-cbc -pbkdf2 -in $FILE -out $FILE.enc
+  encrypt
 }
 
 
@@ -204,7 +205,7 @@ function deleteEntry()
     fi
     ((LINENUM++))
   done < $FILE
-  openssl enc -aes-256-cbc -pbkdf2 -in $FILE -out $FILE.enc
+  encrypt
 }
 
 
@@ -278,4 +279,5 @@ else
     echo -e "[${TEXT_ERROR}ERROR${TEXT_RESET}]: Nothing to do!"
   fi
   rm $FILE
+  unset PASS
 fi
