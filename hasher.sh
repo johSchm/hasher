@@ -3,7 +3,7 @@
 # ==========================================================================
 # @name     HASH
 # @author   JS
-# @version  1.2
+# @version  1.21
 # @date     July 2019
 # ==========================================================================
 
@@ -160,6 +160,7 @@ function editEntry()
       for (( i=$LINENUM; i <= ($LINENUM+4); i++ )) ; do
         sed -i -e "${LINENUM}d" $FILE
       done
+      break
     fi
     ((LINENUM++))
   done < $FILE
@@ -202,6 +203,7 @@ function deleteEntry()
       for (( i=$LINENUM; i <= ($LINENUM+4); i++ )) ; do
         sed -i -e "${LINENUM}d" $FILE
       done
+      break
     fi
     ((LINENUM++))
   done < $FILE
